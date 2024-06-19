@@ -1,9 +1,37 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MQTT Integration</title>
+</head>
 <body>
-    <h1>Hello World</h1>
-    <p>I'm hosted with GitHub Pages.</p>
-</body>
+    <h1>MQTT Integration with Google Sites</h1>
+    <button id="send-message">Send Message to MQTT</button>
+    <div id="mqtt-message"></div>
 
+    <script>
+        document.getElementById('send-message').addEventListener('click', function() {
+            fetch('http://localhost:3000/api/mqtt') // Cambia a la URL de tu servidor
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+                    alert('Message sent to MQTT topic');
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        // Obtener mensajes del servidor
+        function getMQTTMessage() {
+            fetch('http://localhost:3000/api/get-message') // Cambia a la URL de tu servidor
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('mqtt-message').innerText = data.message;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Llama a la función para obtener mensajes cada 5 segundos
+        setInterval(getMQTTMessage, 5000);
+    </script>
+</body>
 </html>
