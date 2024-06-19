@@ -2,36 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MQTT Integration</title>
-</head>
-<body>
-    <h1>MQTT Integration with Google Sites</h1>
-    <button id="send-message">Send Message to MQTT</button>
-    <div id="mqtt-message"></div>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Subscriber</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <script>
-        document.getElementById('send-message').addEventListener('click', function() {
-            fetch('http://localhost:3000/api/mqtt') // Cambia a la URL de tu servidor
-                .then(response => response.text())
-                .then(data => {
-                    console.log(data);
-                    alert('Message sent to MQTT topic');
-                })
-                .catch(error => console.error('Error:', error));
-        });
+       
+        var broker = {
+            hostname: "broker.hivemq.com",
+            port: 8000,
+            clientId: "web_" + Math.random().toString(16).substr(2, 8)
+        };
+ 
+        var topic = "pepe";
 
-        // Obtener mensajes del servidor
-        function getMQTTMessage() {
-            fetch('http://localhost:3000/api/get-message') // Cambia a la URL de tu servidor
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('mqtt-message').innerText = data.message;
-                })
-                .catch(error => console.error('Error:', error));
+        // MQTT client instance
+        var client = new Paho.MQTT.Client(broker.hostname, broker.port, broker.clientId);
+ 
+        function onConnect() {
+            console.log("Connected to MQTT broker");
+            client.subscribe(topic);
+            console.log("Subscribed to topic: " + topic);
         }
 
-        // Llama a la función para obtener mensajes cada 5 segundos
-        setInterval(getMQTTMessage, 5000);
+        function onFailure(message) {
+            console.log("Connection to MQTT broker failed: " + message.errorMessage);
+        } 
+
+        function onMessageArrived(message) {
+            console.log("Received message: " + message.payloadString); 
+            document.getElementById("message").innerHTML = "Received message: " + message.payloadString;
+        }
+
+        // Set callback functions
+        client.onConnectionLost = onFailure;
+        client.onMessageArrived = onMessageArrived;
+
+        // Connect to MQTT broker
+        client.connect({
+            onSuccess: onConnect,
+            onFailure: onFailure,
+            useSSL: false,
+            userName: "user1",
+            password: "password"
+        });
+
     </script>
+</head>
+<body>
+    <h1>MQTT Subscriber</h1>
+    <div id="message"></div>
 </body>
 </html>
